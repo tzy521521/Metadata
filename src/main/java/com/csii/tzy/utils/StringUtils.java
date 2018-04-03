@@ -3,8 +3,8 @@ package com.csii.tzy.utils;
 import java.util.List;
 
 /**
- * @author liuzh
- * @since 2015-03-19
+ * @author lipu@csii.com.cn
+ * @since 2018-03-28
  */
 public class StringUtils {
 

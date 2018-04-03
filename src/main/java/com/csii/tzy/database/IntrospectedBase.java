@@ -3,14 +3,13 @@ package com.csii.tzy.database;
 import com.csii.tzy.utils.StringUtils;
 
 public class IntrospectedBase {
-    //名称
+    //名称--表名称，字段名称
     protected String name;
-    //备注
+    //备注--表备注，字段备注
     protected String remarks;
 
     /**
-     * 根据条件进行过滤
-     *
+     * 根据条件进行过滤------暂时没啥用。
      * @param searchText
      * @param searchComment
      * @param matchType

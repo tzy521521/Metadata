@@ -23,8 +23,7 @@ import java.util.StringTokenizer;
  * org.mybatis.generator.api.dom.java.FullyQualifiedJavaType
  * @author Jeff Butler
  */
-public class FullyQualifiedJavaType implements
-        Comparable<FullyQualifiedJavaType> {
+public class FullyQualifiedJavaType implements Comparable<FullyQualifiedJavaType> {
     private static final String JAVA_LANG = "java.lang";
     private static FullyQualifiedJavaType intInstance = null;
     private static FullyQualifiedJavaType stringInstance = null;
@@ -51,7 +50,7 @@ public class FullyQualifiedJavaType implements
 
     public FullyQualifiedJavaType(String fullTypeSpecification) {
         super();
-        typeArguments = new ArrayList<FullyQualifiedJavaType>();
+        typeArguments = new ArrayList<>();
         parse(fullTypeSpecification);
     }
 

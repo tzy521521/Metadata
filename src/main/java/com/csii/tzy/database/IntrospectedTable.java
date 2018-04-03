@@ -5,8 +5,10 @@ import java.util.Iterator;
 import java.util.List;
 
 public class IntrospectedTable extends IntrospectedBase {
-    private String schema;
+    //表所在的数据库
     private String catalog;
+    //表所在的schema
+    private String schema;
     //增加表的类型------------一个有用的功能，待实现。
     private String type;
     //表的主键信息
@@ -20,10 +22,10 @@ public class IntrospectedTable extends IntrospectedBase {
 
     public IntrospectedTable() {
         super();
-        primaryKeyColumns = new ArrayList<IntrospectedColumn>();
-        foreignKeyColumns = new ArrayList<IntrospectedColumn>();
-        inFoColumns = new ArrayList<IndexInFo>();
-        baseColumns = new ArrayList<IntrospectedColumn>();
+        primaryKeyColumns = new ArrayList<>();
+        foreignKeyColumns = new ArrayList<>();
+        inFoColumns = new ArrayList<>();
+        baseColumns = new ArrayList<>();
     }
 
     public IntrospectedTable(String catalog, String schema, String name) {
@@ -31,21 +33,6 @@ public class IntrospectedTable extends IntrospectedBase {
         this.catalog = catalog;
         this.schema = schema;
         this.name = name;
-    }
-
-    /**
-     * 新增。。。。。。。。。
-     * @param catalog
-     * @param schema
-     * @param name
-     * @param type
-     */
-    public IntrospectedTable(String catalog, String schema, String name,String type) {
-        this();
-        this.catalog = catalog;
-        this.schema = schema;
-        this.name = name;
-        this.type =type;
     }
 
     public String getCatalog() {
@@ -117,6 +104,7 @@ public class IntrospectedTable extends IntrospectedBase {
         baseColumns.add(introspectedColumn);
         introspectedColumn.setIntrospectedTable(this);
     }
+
     //添加主键列表
     public void addPrimaryKeyColumn(String columnName) {
         Iterator<IntrospectedColumn> iter = baseColumns.iterator();
@@ -129,6 +117,7 @@ public class IntrospectedTable extends IntrospectedBase {
             }
         }
     }
+
     //添加外键列表
     public void addForeignKeyColumn(String columnName) {
         Iterator<IntrospectedColumn> iter = baseColumns.iterator();
@@ -140,18 +129,8 @@ public class IntrospectedTable extends IntrospectedBase {
             }
         }
     }
-    //
-    public void addInFoKeyColumn(String columnName,IndexInFo indexInFo) {
-        Iterator<IntrospectedColumn> iter = baseColumns.iterator();
-        while (iter.hasNext()) {
-            IntrospectedColumn introspectedColumn = iter.next();
-            if (introspectedColumn.getName().equals(columnName)) {
-                inFoColumns.add(indexInFo);
-                break;
-            }
-        }
-    }
 
+    //添加索引
     public void addInFoKeyColumn(IndexInFo indexInFo){
         inFoColumns.add(indexInFo);
     }
@@ -178,17 +157,6 @@ public class IntrospectedTable extends IntrospectedBase {
     //
     public boolean hasJDBCTimeColumns() {
         boolean rc = false;
-        /*
-        if (!rc) {
-            for (IntrospectedColumn introspectedColumn : baseColumns) {
-                if (introspectedColumn.isJDBCTimeColumn()) {
-                    rc = true;
-                    break;
-                }
-            }
-        }
-         */
-
         for (IntrospectedColumn introspectedColumn : baseColumns) {
             if (introspectedColumn.isJDBCTimeColumn()) {
                 rc = true;
@@ -200,16 +168,6 @@ public class IntrospectedTable extends IntrospectedBase {
     //
     public boolean hasJDBCDateColumns() {
         boolean rc = false;
-        /*
-        if (!rc) {
-            for (IntrospectedColumn introspectedColumn : baseColumns) {
-                if (introspectedColumn.isJDBCDateColumn()) {
-                    rc = true;
-                    break;
-                }
-            }
-        }
-         */
         for (IntrospectedColumn introspectedColumn : baseColumns) {
             if (introspectedColumn.isJDBCDateColumn()) {
                 rc = true;
@@ -219,6 +177,7 @@ public class IntrospectedTable extends IntrospectedBase {
         return rc;
     }
 
+    //增加了表的类型，需不需要修改
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -233,6 +192,7 @@ public class IntrospectedTable extends IntrospectedBase {
         return true;
     }
 
+    //增加了表的类型，需不需要修改
     @Override
     public int hashCode() {
         int result = name != null ? name.hashCode() : 0;

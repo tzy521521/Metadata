@@ -16,10 +16,8 @@ import java.util.*;
  */
 public class DatabaseIntrospector {
 
-    protected static final Map<Integer, JdbcTypeInformation> typeMap;
+    protected static final Map<Integer, JdbcTypeInformation> typeMap = new HashMap<>();
     static {
-        typeMap = new HashMap<Integer, JdbcTypeInformation>();
-
         typeMap.put(Types.ARRAY, new JdbcTypeInformation("ARRAY",
                 new FullyQualifiedJavaType(Object.class.getName())));
         typeMap.put(Types.BIGINT, new JdbcTypeInformation("BIGINT",
@@ -101,7 +99,273 @@ public class DatabaseIntrospector {
         this.useCamelCase = useCamelCase;
     }
 
-    public FullyQualifiedJavaType calculateJavaType(IntrospectedColumn introspectedColumn) {
+    /**
+     *新增~~~~~~~~~~~~~~~~~
+     * @return
+     */
+    public String getCatalogSeparator() throws SQLException{
+        return dbMetadataUtils.getDatabaseMetaData().getCatalogSeparator();
+    }
+
+    /**
+     * 获得数据库的列表。
+     * @return
+     * @throws SQLException
+     */
+    public List<String> getCatalogs() throws SQLException {
+        ResultSet rs = dbMetadataUtils.getDatabaseMetaData().getCatalogs();
+        List<String> catalogs = new ArrayList<String>();
+        while (rs.next()) {
+            catalogs.add(rs.getString("TABLE_CAT"));
+            //catalogs.add(rs.getString(1));
+        }
+        closeResultSet(rs);
+        return catalogs;
+    }
+
+    /**
+     *获得数据中的模式 名称列表
+     * @return
+     * @throws SQLException
+     */
+    public List<String> getSchemas() throws SQLException {
+        ResultSet rs = dbMetadataUtils.getDatabaseMetaData().getSchemas();
+        List<String> schemas = new ArrayList<String>();
+        while (rs.next()) {
+            //返回的结果中还有一个属性-TABLE_CATALOG String => 类别名称（可为 null）
+            schemas.add(rs.getString("TABLE_SCHEM"));
+        }
+        closeResultSet(rs);
+        return schemas;
+    }
+
+    /**
+     * 新增
+     * @return
+     * @throws SQLException
+     */
+    public List<String> getTableTypes() throws SQLException {
+        ResultSet rs = dbMetadataUtils.getDatabaseMetaData().getTableTypes();
+        List<String> tableType = new ArrayList<String>();
+        while (rs.next()) {
+            tableType.add(rs.getString("TABLE_TYPE"));
+        }
+        closeResultSet(rs);
+        return tableType;
+    }
+
+    /**
+     * 获取表信息
+     *
+     * @param config
+     * @return
+     * @throws SQLException
+     */
+    public List<IntrospectedTable> introspectTables(DatabaseConfig config) throws SQLException {
+        //config.hasProcess()始终为假？
+        if (config.hasProcess()) {
+            config.getDatabaseProcess().processStart();
+        }
+        List<IntrospectedTable> introspectedTables = null;
+        try {
+            DatabaseConfig localConfig = getLocalDatabaseConfig(config);
+            Map<IntrospectedTable, List<IntrospectedColumn>> columns = getColumns(localConfig);
+            if (columns.isEmpty()) {
+                introspectedTables = new ArrayList<>(0);
+            } else {
+                introspectedTables = calculateIntrospectedTables(localConfig, columns);
+                Iterator<IntrospectedTable> iter = introspectedTables.iterator();
+                while (iter.hasNext()) {
+                    IntrospectedTable introspectedTable = iter.next();
+                    //去掉没有字段的表
+                    if (!introspectedTable.hasAnyColumns()) {
+                        iter.remove();
+                    }
+                }
+            }
+        } finally {
+            if (config.hasProcess()) {
+                config.getDatabaseProcess().processComplete(introspectedTables);
+            }
+        }
+        return introspectedTables;
+    }
+
+    /**
+     * 根据数据库转换配置
+     * 数据库--将未用双引号引起来的大小写混合的 SQL 标识符存储的形式---mysql中用小写
+     * @param config
+     * @return
+     * @throws SQLException
+     */
+    protected DatabaseConfig getLocalDatabaseConfig(DatabaseConfig config) throws SQLException {
+        String localCatalog;
+        String localSchema;
+        String localTableName;
+        //在这里，dbMetadataUtils.getLetterCase()就可以确定大小写的形式，这里的代码有问题，还要再重新链接数据库。
+        if (dbMetadataUtils.getDatabaseMetaData().storesLowerCaseIdentifiers()) {
+            localCatalog = config.getCatalog() == null ? null : config.getCatalog().toLowerCase();
+            localSchema = config.getSchemaPattern() == null ? null : config.getSchemaPattern().toLowerCase();
+            localTableName = config.getTableNamePattern() == null ? null : config.getTableNamePattern().toLowerCase();
+        } else if (dbMetadataUtils.getDatabaseMetaData().storesUpperCaseIdentifiers()) {
+            localCatalog = config.getCatalog() == null ? null : config.getCatalog().toUpperCase();
+            localSchema = config.getSchemaPattern() == null ? null : config.getSchemaPattern().toUpperCase();
+            localTableName = config.getTableNamePattern() == null ? null : config.getTableNamePattern().toUpperCase();
+        } else {
+            localCatalog = config.getCatalog();
+            localSchema = config.getSchemaPattern();
+            localTableName = config.getTableNamePattern();
+        }
+        DatabaseConfig newConfig = new DatabaseConfig(localCatalog, localSchema, localTableName);
+        //DatabaseProcess仍旧为空。----以后扩展？？
+        newConfig.setDatabaseProcess(config.getDatabaseProcess());
+        return newConfig;
+    }
+
+    /**
+     * 获取全部的表和字段--------获得表和字段的对应关系（Map）
+     *
+     * @param config
+     * @return
+     * @throws SQLException
+     */
+    protected Map<IntrospectedTable, List<IntrospectedColumn>> getColumns(DatabaseConfig config) throws SQLException {
+        Map<IntrospectedTable, List<IntrospectedColumn>> answer = new HashMap<>();
+        /**
+         * 在这里修改获得的字段的属性详情。
+         */
+        ResultSet rs = dbMetadataUtils.getDatabaseMetaData().getColumns(
+                config.getCatalog(),
+                config.getSchemaPattern(),
+                config.getTableNamePattern(),
+                null
+        );
+        while (rs.next()) {
+            IntrospectedColumn column = new IntrospectedColumn();
+            column.setJdbcType(rs.getInt("DATA_TYPE"));
+            column.setType(rs.getString("TYPE_NAME"));
+            column.setLength(rs.getInt("COLUMN_SIZE"));
+            column.setName(rs.getString("COLUMN_NAME"));
+            column.setNullable(rs.getInt("NULLABLE") == DatabaseMetaData.columnNullable);
+            column.setScale(rs.getInt("DECIMAL_DIGITS"));
+            column.setRemarks(rs.getString("REMARKS"));
+            column.setDefaultValue(rs.getString("COLUMN_DEF"));
+
+            IntrospectedTable table = new IntrospectedTable(
+                    /**
+                     * 根据字段的获得所在的表的一些信息
+                     */
+                    rs.getString("TABLE_CAT"),
+                    rs.getString("TABLE_SCHEM"),
+                    rs.getString("TABLE_NAME")
+            );
+
+            List<IntrospectedColumn> columns = answer.get(table);
+            if (columns == null) {
+                columns = new ArrayList<>();
+                answer.put(table, columns);
+                if (config.hasProcess()) {
+                    config.getDatabaseProcess().processTable(table);
+                }
+            }
+            if (config.hasProcess()) {
+                config.getDatabaseProcess().processColumn(table, column);
+            }
+            columns.add(column);
+        }
+        closeResultSet(rs);
+        return answer;
+    }
+
+    /**
+     * 处理表
+     * @param config
+     * @param columns
+     * @return
+     * @throws SQLException
+     */
+    protected List<IntrospectedTable> calculateIntrospectedTables(DatabaseConfig config, Map<IntrospectedTable, List<IntrospectedColumn>> columns) throws SQLException {
+        List<IntrospectedTable> answer = new ArrayList<>();
+        //获取表注释信息
+        Map<String, String> tableCommentsMap = getTableComments(config);
+        //表-字段-字段注释-----mysql中tableColumnCommentsMap用不着，为空。
+        Map<String, Map<String, String>> tableColumnCommentsMap = getColumnComments(config);
+
+        for (Map.Entry<IntrospectedTable, List<IntrospectedColumn>> entry : columns.entrySet()) {
+            IntrospectedTable table = entry.getKey();
+            if (tableCommentsMap != null && tableCommentsMap.containsKey(table.getName())) {
+                //表的注释
+                table.setRemarks(tableCommentsMap.get(table.getName()));
+            }
+            Map<String, String> columnCommentsMap = null;
+            if (tableColumnCommentsMap != null && tableColumnCommentsMap.containsKey(table.getName())) {
+                columnCommentsMap = tableColumnCommentsMap.get(table.getName());
+            }
+            for (IntrospectedColumn introspectedColumn : entry.getValue()) {
+                FullyQualifiedJavaType fullyQualifiedJavaType = calculateJavaType(introspectedColumn);
+                if (fullyQualifiedJavaType != null) {
+                    introspectedColumn.setFullyQualifiedJavaType(fullyQualifiedJavaType);
+                    introspectedColumn.setJdbcTypeName(calculateJdbcTypeName(introspectedColumn));
+                }
+                //转换为驼峰形式
+                if (useCamelCase) {
+                    introspectedColumn.setJavaProperty(JavaBeansUtil.getCamelCaseString(introspectedColumn.getName(), false));
+                } else {
+                    introspectedColumn.setJavaProperty(JavaBeansUtil.getValidPropertyName(introspectedColumn.getName()));
+                }
+                //处理注释
+                if (columnCommentsMap != null && columnCommentsMap.containsKey(introspectedColumn.getName())) {
+                    introspectedColumn.setRemarks(columnCommentsMap.get(introspectedColumn.getName()));
+                }
+                table.addColumn(introspectedColumn);
+            }
+
+            //添加表的类型信息。
+            calculateTableTypes(config,table);
+            //表的主键
+            calculatePrimaryKey(config, table);
+            //表的外键
+            calculateForeignKey(config,table);
+            //表的索引
+            calculateInFoColumns(config,table);
+            //在这里增加根据表类型获取像相应的表信息？？？
+            answer.add(table);
+        }
+        return answer;
+    }
+
+    /**
+     * 获取表名和注释映射（Map）public--protected
+     * @param config
+     * @return
+     * @throws SQLException
+     */
+    protected Map<String, String> getTableComments(DatabaseConfig config) throws SQLException {
+        ResultSet rs = dbMetadataUtils.getDatabaseMetaData().getTables(
+                config.getCatalog(),
+                config.getSchemaPattern(),
+                config.getTableNamePattern(),
+                null
+        );
+        Map<String, String> answer = new HashMap<>();
+        while (rs.next()) {
+            answer.put(rs.getString("TABLE_NAME"), rs.getString("REMARKS"));
+        }
+        closeResultSet(rs);
+        return answer;
+    }
+
+    /**
+     * 获取表名和列名-注释映射
+     * @param config
+     * @return
+     * @throws SQLException
+     */
+    protected Map<String, Map<String, String>> getColumnComments(DatabaseConfig config) throws SQLException {
+        return null;
+    }
+
+    protected FullyQualifiedJavaType calculateJavaType(IntrospectedColumn introspectedColumn) {
         FullyQualifiedJavaType answer;
         JdbcTypeInformation jdbcTypeInformation = typeMap.get(introspectedColumn.getJdbcType());
         if (jdbcTypeInformation == null) {
@@ -156,58 +420,6 @@ public class DatabaseIntrospector {
         }
 
         return answer;
-    }
-
-    /**
-     *新增~~~~~~~~~~~~~~~~~
-     * @return
-     */
-    public String getCatalogSeparator() throws SQLException{
-        return dbMetadataUtils.getDatabaseMetaData().getCatalogSeparator();
-    }
-    /**
-     * 获得数据库的列表。
-     * @return
-     * @throws SQLException
-     */
-    public List<String> getCatalogs() throws SQLException {
-        ResultSet rs = dbMetadataUtils.getDatabaseMetaData().getCatalogs();
-        List<String> catalogs = new ArrayList<String>();
-        while (rs.next()) {
-            catalogs.add(rs.getString("TABLE_CAT"));
-            //catalogs.add(rs.getString(1));
-        }
-        closeResultSet(rs);
-        return catalogs;
-    }
-    /**
-     *获得数据中的模式 名称列表
-     * @return
-     * @throws SQLException
-     */
-    public List<String> getSchemas() throws SQLException {
-        ResultSet rs = dbMetadataUtils.getDatabaseMetaData().getSchemas();
-        List<String> schemas = new ArrayList<String>();
-        while (rs.next()) {
-            //返回的结果中还有一个属性-TABLE_CATALOG String => 类别名称（可为 null）
-            schemas.add(rs.getString("TABLE_SCHEM"));
-        }
-        closeResultSet(rs);
-        return schemas;
-    }
-    /**
-     * 新增
-     * @return
-     * @throws SQLException
-     */
-    public List<String> getTableTypes() throws SQLException {
-        ResultSet rs = dbMetadataUtils.getDatabaseMetaData().getTableTypes();
-        List<String> tableType = new ArrayList<String>();
-        while (rs.next()) {
-            tableType.add(rs.getString("TABLE_TYPE"));
-        }
-        closeResultSet(rs);
-        return tableType;
     }
 
     /**
@@ -342,9 +554,9 @@ public class DatabaseIntrospector {
                 indexInFo.setColumnName(rs.getString("COLUMN_NAME"));
 
                 introspectedTable.addInFoKeyColumn(indexInFo);
-        }
-    } catch (SQLException e) {
-    } finally {
+            }
+        } catch (SQLException e) {
+        } finally {
             closeResultSet(rs);
         }
     }
@@ -360,222 +572,6 @@ public class DatabaseIntrospector {
             } catch (SQLException e) {
             }
         }
-    }
-
-    /**
-     * 获取表信息
-     *
-     * @param config
-     * @return
-     * @throws SQLException
-     */
-    public List<IntrospectedTable> introspectTables(DatabaseConfig config) throws SQLException {
-        if (config.hasProcess()) {
-            config.getDatabaseProcess().processStart();
-        }
-        List<IntrospectedTable> introspectedTables = null;
-        try {
-            DatabaseConfig localConfig = getLocalDatabaseConfig(config);
-            Map<IntrospectedTable, List<IntrospectedColumn>> columns = getColumns(localConfig);
-
-            if (columns.isEmpty()) {
-                introspectedTables = new ArrayList<IntrospectedTable>(0);
-            } else {
-                introspectedTables = calculateIntrospectedTables(localConfig, columns);
-                Iterator<IntrospectedTable> iter = introspectedTables.iterator();
-                while (iter.hasNext()) {
-                    IntrospectedTable introspectedTable = iter.next();
-                    //去掉没有字段的表
-                    if (!introspectedTable.hasAnyColumns()) {
-                        iter.remove();
-                    }
-                }
-            }
-        } finally {
-            if (config.hasProcess()) {
-                config.getDatabaseProcess().processComplete(introspectedTables);
-            }
-        }
-        return introspectedTables;
-    }
-
-    /**
-     * 根据数据库转换配置---------在这里修改查询制定类型的表。
-     *
-     * @param config
-     * @return
-     * @throws SQLException
-     */
-    protected DatabaseConfig getLocalDatabaseConfig(DatabaseConfig config) throws SQLException {
-        String localCatalog;
-        String localSchema;
-        String localTableName;
-        if (dbMetadataUtils.getDatabaseMetaData().storesLowerCaseIdentifiers()) {
-            localCatalog = config.getCatalog() == null ? null : config.getCatalog()
-                    .toLowerCase();
-            localSchema = config.getSchemaPattern() == null ? null : config.getSchemaPattern()
-                    .toLowerCase();
-            localTableName = config.getTableNamePattern() == null ? null : config
-                    .getTableNamePattern().toLowerCase();
-        } else if (dbMetadataUtils.getDatabaseMetaData().storesUpperCaseIdentifiers()) {
-            localCatalog = config.getCatalog() == null ? null : config.getCatalog()
-                    .toUpperCase();
-            localSchema = config.getSchemaPattern() == null ? null : config.getSchemaPattern()
-                    .toUpperCase();
-            localTableName = config.getTableNamePattern() == null ? null : config
-                    .getTableNamePattern().toUpperCase();
-        } else {
-            localCatalog = config.getCatalog();
-            localSchema = config.getSchemaPattern();
-            localTableName = config.getTableNamePattern();
-        }
-        DatabaseConfig newConfig = new DatabaseConfig(localCatalog, localSchema, localTableName);
-        newConfig.setDatabaseProcess(config.getDatabaseProcess());
-        return newConfig;
-    }
-
-    /**
-     * 获取全部的表和字段--------获得表和字段的对应关系（Map）
-     *
-     * @param config
-     * @return
-     * @throws SQLException
-     */
-    protected Map<IntrospectedTable, List<IntrospectedColumn>> getColumns(DatabaseConfig config) throws SQLException {
-        Map<IntrospectedTable, List<IntrospectedColumn>> answer = new HashMap<IntrospectedTable, List<IntrospectedColumn>>();
-
-        /**
-         * 在这里修改获得的字段的属性详情。
-         */
-        ResultSet rs = dbMetadataUtils.getDatabaseMetaData().getColumns(
-                config.getCatalog(),
-                config.getSchemaPattern(),
-                config.getTableNamePattern(),
-                null
-        );
-        while (rs.next()) {
-            IntrospectedColumn column = new IntrospectedColumn();
-            column.setJdbcType(rs.getInt("DATA_TYPE"));
-            column.setType(rs.getString("TYPE_NAME"));
-            column.setLength(rs.getInt("COLUMN_SIZE"));
-            column.setName(rs.getString("COLUMN_NAME"));
-            column.setNullable(rs.getInt("NULLABLE") == DatabaseMetaData.columnNullable);
-            column.setScale(rs.getInt("DECIMAL_DIGITS"));
-            column.setRemarks(rs.getString("REMARKS"));
-            column.setDefaultValue(rs.getString("COLUMN_DEF"));
-
-            IntrospectedTable table = new IntrospectedTable(
-                    /**
-                     * 根据字段的获得所在的表的一些信息
-                     */
-                    rs.getString("TABLE_CAT"),
-                    rs.getString("TABLE_SCHEM"),
-                    rs.getString("TABLE_NAME")
-            );
-
-            List<IntrospectedColumn> columns = answer.get(table);
-            if (columns == null) {
-                columns = new ArrayList<IntrospectedColumn>();
-                answer.put(table, columns);
-                if (config.hasProcess()) {
-                    config.getDatabaseProcess().processTable(table);
-                }
-            }
-            if (config.hasProcess()) {
-                config.getDatabaseProcess().processColumn(table, column);
-            }
-            columns.add(column);
-        }
-        closeResultSet(rs);
-        return answer;
-    }
-
-    /**
-     * 处理表
-     * @param config
-     * @param columns
-     * @return
-     * @throws SQLException
-     */
-    protected List<IntrospectedTable> calculateIntrospectedTables(DatabaseConfig config, Map<IntrospectedTable, List<IntrospectedColumn>> columns) throws SQLException {
-        List<IntrospectedTable> answer = new ArrayList<IntrospectedTable>();
-        //获取表注释信息
-        Map<String, String> tableCommentsMap = getTableComments(config);
-        //表-字段-字段注释
-        Map<String, Map<String, String>> tableColumnCommentsMap = getColumnComments(config);
-
-        for (Map.Entry<IntrospectedTable, List<IntrospectedColumn>> entry : columns.entrySet()) {
-            IntrospectedTable table = entry.getKey();
-            if (tableCommentsMap != null && tableCommentsMap.containsKey(table.getName())) {
-                //表的注释
-                table.setRemarks(tableCommentsMap.get(table.getName()));
-            }
-            Map<String, String> columnCommentsMap = null;
-            if (tableColumnCommentsMap != null && tableColumnCommentsMap.containsKey(table.getName())) {
-                columnCommentsMap = tableColumnCommentsMap.get(table.getName());
-            }
-            for (IntrospectedColumn introspectedColumn : entry.getValue()) {
-                FullyQualifiedJavaType fullyQualifiedJavaType = calculateJavaType(introspectedColumn);
-                if (fullyQualifiedJavaType != null) {
-                    introspectedColumn.setFullyQualifiedJavaType(fullyQualifiedJavaType);
-                    introspectedColumn.setJdbcTypeName(calculateJdbcTypeName(introspectedColumn));
-                }
-                //转换为驼峰形式
-                if (useCamelCase) {
-                    introspectedColumn.setJavaProperty(JavaBeansUtil.getCamelCaseString(introspectedColumn.getName(), false));
-                } else {
-                    introspectedColumn.setJavaProperty(JavaBeansUtil.getValidPropertyName(introspectedColumn.getName()));
-                }
-                //处理注释
-                if (columnCommentsMap != null && columnCommentsMap.containsKey(introspectedColumn.getName())) {
-                    introspectedColumn.setRemarks(columnCommentsMap.get(introspectedColumn.getName()));
-                }
-                table.addColumn(introspectedColumn);
-            }
-
-            //添加表的类型信息。
-            calculateTableTypes(config,table);
-            //表的主键
-            calculatePrimaryKey(config, table);
-            //表的外键
-            calculateForeignKey(config,table);
-            //表的索引
-            calculateInFoColumns(config,table);
-            answer.add(table);
-        }
-        return answer;
-    }
-
-    /**
-     * 获取表名和注释映射（Map）public--protected
-     * @param config
-     * @return
-     * @throws SQLException
-     */
-    public Map<String, String> getTableComments(DatabaseConfig config) throws SQLException {
-        ResultSet rs = dbMetadataUtils.getDatabaseMetaData().getTables(
-                config.getCatalog(),
-                config.getSchemaPattern(),
-                config.getTableNamePattern(),
-                null
-        );
-        Map<String, String> answer = new HashMap<String, String>();
-        while (rs.next()) {
-            //为什么在MySql中没办法获得其表备注。
-            answer.put(rs.getString("TABLE_NAME"), rs.getString("REMARKS"));
-        }
-        closeResultSet(rs);
-        return answer;
-    }
-
-    /**
-     * 获取表名和列名-注释映射
-     * @param config
-     * @return
-     * @throws SQLException
-     */
-    protected Map<String, Map<String, String>> getColumnComments(DatabaseConfig config) throws SQLException {
-        return null;
     }
 
     /**

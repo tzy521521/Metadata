@@ -15,18 +15,22 @@ IntrospectedTable
 DatabaseIntrospector 和 DBMetadataUtils
 功能：
 
-    0.获得DatabaseIntrospector    getIntrospector()
-
     1.获得数据库的列表。          getCatalogs()
     2.获得数据中的模式 名称列表   getSchemas()
     4.数据库中所用的表类型       getTableTypes()
     5.获取此数据库用作类别和表名之间的分隔符的 String。  getCatalogSeparator()---------有什么意义？
 
+这个最重要。
     3.根据数据库查询配置，获得数据库中表的和表中字段的信息。introspectTables(DatabaseConfig config)
 
 
 DBMetadataUtils
- 构造函数DBMetadataUtils(SimpleDataSource dataSource, boolean forceBigDecimals, boolean useCamelCase) 中forceBigDecimals，和useCamelCase 的作用？？？？？
+    构造函数DBMetadataUtils(SimpleDataSource dataSource)
+               forceBigDecimals默认为false-------useCamelCase默认为true。 有啥用处？
+    构造函数DBMetadataUtils(SimpleDataSource dataSource, boolean forceBigDecimals, boolean useCamelCase)
+
+    2.测试数据库是否链接---testConnection()----有啥用？
+
 
     4.提供了一个默认的数据库查询配置，getDefaultConfig()---
                  -对于mysql的5.7使用安全配置的url的话 会有一点小问题。

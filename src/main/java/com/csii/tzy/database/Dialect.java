@@ -5,7 +5,7 @@ package com.csii.tzy.database;
  */
 public enum Dialect {
     ORACLE("oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@//localhost:1521/orcl"),
-    MYSQL("com.mysql.jdbc.Driver", "jdbc:mysql://localhost:3306/sample"),
+    MYSQL("com.mysql.jdbc.Driver", "jdbc:mysql://localhost:3306/test"),
     DB2("com.ibm.db2.jcc.DB2Driver", "jdbc:db2://localhost:50000/SAMPLE"),
     HSQLDB("org.hsqldb.jdbcDriver", "jdbc:hsqldb:mem:sample"),
     MARIADB("org.mariadb.jdbc.Driver", "jdbc:mariadb://localhost:3306/sample"),

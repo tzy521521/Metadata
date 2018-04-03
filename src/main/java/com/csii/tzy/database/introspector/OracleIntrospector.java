@@ -27,8 +27,9 @@ public class OracleIntrospector extends DatabaseIntrospector {
      * @return
      * @throws SQLException
      */
+    @Override
     public Map<String, String> getTableComments(DatabaseConfig config) throws SQLException {
-        Map<String, String> answer = new HashMap<String, String>();
+        Map<String, String> answer = new HashMap<>();
         try {
             StringBuilder sqlBuilder = new StringBuilder("select table_name tname,comments from all_tab_comments where comments is not null ");
             if (StringUtils.isNotEmpty(config.getSchemaPattern())) {
@@ -76,7 +77,7 @@ public class OracleIntrospector extends DatabaseIntrospector {
             while (rs.next()) {
                 String tname = rs.getString(dbMetadataUtils.convertLetterByCase("TNAME"));
                 if (!answer.containsKey(tname)) {
-                    answer.put(tname, new HashMap<String, String>());
+                    answer.put(tname, new HashMap<>());
                 }
                 answer.get(tname).put(rs.getString(dbMetadataUtils.convertLetterByCase("CNAME")), rs.getString(dbMetadataUtils.convertLetterByCase("COMMENTS")));
             }

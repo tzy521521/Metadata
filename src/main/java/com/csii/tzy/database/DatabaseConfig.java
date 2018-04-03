@@ -4,22 +4,18 @@ import java.util.Arrays;
 
 /**
  * 数据库查询配置
- *
  * @author tzy
  */
 public class DatabaseConfig {
     //要查询的数据库
     private String catalog;
-
     //要查询的匹配的shema.
     private String schemaPattern;
     //要查询的表名称
     private String tableNamePattern;
-
     //增加数据表的的类型功能~~~~~~~~~~~~~~~~~~~~,但是查询字段的时候不是这个参数。
     private String[] types;
-
-    //
+    //暂时没啥用？
     private DatabaseProcess databaseProcess;
 
     public DatabaseConfig() {
@@ -34,6 +30,13 @@ public class DatabaseConfig {
         this.catalog = catalog;
         this.schemaPattern = schemaPattern;
         this.tableNamePattern = tableNamePattern;
+    }
+
+    public DatabaseConfig(String catalog, String schemaPattern, String tableNamePattern, String[] types) {
+        this.catalog = catalog;
+        this.schemaPattern = schemaPattern;
+        this.tableNamePattern = tableNamePattern;
+        this.types = types;
     }
 
     public String getCatalog() {
@@ -60,6 +63,14 @@ public class DatabaseConfig {
         this.tableNamePattern = tableNamePattern;
     }
 
+    public String[] getTypes() {
+        return types;
+    }
+
+    public void setTypes(String[] types) {
+        this.types = types;
+    }
+
     public boolean hasProcess() {
         return databaseProcess != null;
     }
@@ -83,6 +94,7 @@ public class DatabaseConfig {
                 '}';
     }
 
+    //加入查询类型是否要修改？
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -99,6 +111,7 @@ public class DatabaseConfig {
         return true;
     }
 
+    //加入查询类型是否要修改？
     @Override
     public int hashCode() {
         int result = catalog != null ? catalog.hashCode() : 0;

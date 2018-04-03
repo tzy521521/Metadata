@@ -3,6 +3,7 @@ package com.csii.tzy.database;
 import java.util.List;
 
 /**
+ * 暂时没啥用。
  * 内省数据库时的处理接口
  */
 public interface DatabaseProcess {
