@@ -40,24 +40,24 @@ public class Main {
         System.out.println(config);
         /*
         这样也是可以的。。。
-        DatabaseIntrospector databaseIntrospector=dbMetadataUtils.getIntrospector();
+        //DatabaseIntrospector databaseIntrospector=dbMetadataUtils.getIntrospector();
         DatabaseIntrospector databaseIntrospector=new DatabaseIntrospector(dbMetadataUtils);
         List<IntrospectedTable> list = databaseIntrospector.introspectTables(config);
          */
          List<IntrospectedTable> list = dbMetadataUtils.introspectTables(config);
          for (IntrospectedTable table : list) {
-         System.out.println("表名称："+table.getName()+" 表备注："+table.getRemarks()+" 表的类型："+table.getType());
-         System.out.println(table.getPrimaryKeyColumns());
-         System.out.println(table.getForeignKeyColumns());
-         System.out.println(table.getInFoColumns());
-         System.out.println("字段名称~~"+"字段注释~~"+"~~字段类型");
-         for (IntrospectedColumn column : table.getAllColumns()) {
-         System.out.println(column.getName() + " - "
-         +column.getRemarks()+ " - "
-         +column.getJdbcTypeName()+ " - "
-         );
-         }
-         System.out.println();
+             System.out.println("表名称："+table.getName()+" 表备注："+table.getRemarks()+" 表的类型："+table.getType());
+             System.out.println(table.getPrimaryKeyColumns());
+             System.out.println(table.getForeignKeyColumns());
+             System.out.println(table.getInFoColumns());
+             System.out.println("字段名称~~"+"字段注释~~"+"~~字段类型");
+             for (IntrospectedColumn column : table.getAllColumns()) {
+                 System.out.println(column.getName() + " - "
+                                 +column.getRemarks()+ " - "
+                         +column.getJdbcTypeName()+ " - "
+                 );
+             }
+             System.out.println();
          }
     }
 }
