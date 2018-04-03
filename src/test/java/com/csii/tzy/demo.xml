@@ -81,7 +81,7 @@
                         xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape"
                         mc:Ignorable="w14 w15 w16se w16cid wp14">
                 <w:body>
-
+                 <#list table as t>
                     <w:p w14:paraId="28346E1A" w14:textId="5F6175A1" w:rsidR="0002098A" w:rsidRDefault="00BE58E2">
                         <w:bookmarkStart w:id="0" w:name="_GoBack"/>
                         <w:bookmarkEnd w:id="0"/>
@@ -89,19 +89,10 @@
                             <w:rPr>
                                 <w:rFonts w:hint="eastAsia"/>
                             </w:rPr>
-                            <w:t>短信发送历史</w:t>
-                        </w:r>
-                        <w:r w:rsidRPr="008F2DAA">
-                            <w:rPr>
-                                <w:rFonts w:hint="eastAsia"/>
-                            </w:rPr>
-                            <w:t>表（</w:t>
+                            <w:t>${t.remarks}</w:t>
                         </w:r>
                         <w:r w:rsidRPr="00F10EC4">
-                            <w:t>RJNLSMSHIST</w:t>
-                        </w:r>
-                        <w:r>
-                            <w:t>）</w:t>
+                            <w:t>(S{t.name})</w:t>
                         </w:r>
                     </w:p>
                     <w:p w14:paraId="38EA86A4" w14:textId="77C61AED" w:rsidR="00BE58E2" w:rsidRDefault="00BE58E2">
@@ -138,14 +129,7 @@
                             <w:rPr>
                                 <w:rFonts w:hint="eastAsia"/>
                             </w:rPr>
-                            <w:t>短信发送历史</w:t>
-                        </w:r>
-                        <w:r w:rsidRPr="00EA6BA8">
-                            <w:rPr>
-                                <w:rFonts w:ascii="宋体" w:hAnsi="宋体" w:hint="eastAsia"/>
-                                <w:sz w:val="24"/>
-                            </w:rPr>
-                            <w:t>表</w:t>
+                            <w:t>${t.remarks}</w:t>
                         </w:r>
                         <w:r w:rsidRPr="002E0D7D">
                             <w:rPr>
@@ -189,7 +173,7 @@
                                 <w:rFonts w:ascii="宋体" w:hAnsi="宋体"/>
                                 <w:sz w:val="24"/>
                             </w:rPr>
-                            <w:t>SMS_SEQ</w:t>
+                            <w:t>${t.primaryKey}</w:t>
                         </w:r>
                         <w:r w:rsidRPr="0047357B">
                             <w:rPr>
@@ -233,7 +217,7 @@
                                 <w:rFonts w:ascii="宋体" w:hAnsi="宋体"/>
                                 <w:sz w:val="24"/>
                             </w:rPr>
-                            <w:t>SMS_SEQ</w:t>
+                            <w:t>${t.foreignKey}</w:t>
                         </w:r>
                         <w:r w:rsidRPr="0047357B">
                             <w:rPr>
@@ -277,7 +261,7 @@
                                 <w:rFonts w:ascii="宋体" w:hAnsi="宋体"/>
                                 <w:sz w:val="24"/>
                             </w:rPr>
-                            <w:t>SMS_SEQ</w:t>
+                            <w:t>{t.inFo}</w:t>
                         </w:r>
                         <w:r w:rsidRPr="0047357B">
                             <w:rPr>
@@ -585,6 +569,7 @@
                                 </w:p>
                             </w:tc>
                         </w:tr>
+                      <#list t.COLUMNS as c>
                         <w:tr w:rsidR="00BE58E2" w14:paraId="68783FD6" w14:textId="77777777" w:rsidTr="00BE58E2">
                             <w:trPr>
                                 <w:trHeight w:val="285"/>
@@ -615,7 +600,7 @@
                                             <w:rFonts w:ascii="宋体" w:hAnsi="宋体" w:cs="宋体"/>
                                             <w:szCs w:val="21"/>
                                         </w:rPr>
-                                        <w:t>JNLNO</w:t>
+                                        <w:t>${c.name}</w:t>
                                     </w:r>
                                 </w:p>
                             </w:tc>
@@ -644,7 +629,7 @@
                                             <w:rFonts w:ascii="宋体" w:hAnsi="宋体" w:cs="宋体" w:hint="eastAsia"/>
                                             <w:szCs w:val="21"/>
                                         </w:rPr>
-                                        <w:t>流水号</w:t>
+                                        <w:t>${c.remarks}</w:t>
                                     </w:r>
                                 </w:p>
                             </w:tc>
@@ -679,7 +664,7 @@
                                             <w:rFonts w:ascii="宋体" w:hAnsi="宋体" w:cs="宋体"/>
                                             <w:szCs w:val="21"/>
                                         </w:rPr>
-                                        <w:t>NUMERIC(20)</w:t>
+                                        <w:t>${c.jdbcTypeName}</w:t>
                                     </w:r>
                                 </w:p>
                             </w:tc>
@@ -714,7 +699,7 @@
                                             <w:rFonts w:ascii="宋体" w:hAnsi="宋体" w:cs="宋体" w:hint="eastAsia"/>
                                             <w:szCs w:val="21"/>
                                         </w:rPr>
-                                        <w:t>20</w:t>
+                                        <w:t>${c.length}</w:t>
                                     </w:r>
                                 </w:p>
                             </w:tc>
@@ -749,7 +734,7 @@
                                             <w:rFonts w:ascii="宋体" w:hAnsi="宋体" w:cs="宋体" w:hint="eastAsia"/>
                                             <w:szCs w:val="21"/>
                                         </w:rPr>
-                                        <w:t>Y</w:t>
+                                        <w:t>${c.nullable}</w:t>
                                     </w:r>
                                 </w:p>
                             </w:tc>
@@ -784,7 +769,7 @@
                                             <w:rFonts w:ascii="宋体" w:hAnsi="宋体" w:cs="宋体" w:hint="eastAsia"/>
                                             <w:szCs w:val="21"/>
                                         </w:rPr>
-                                        <w:t>1</w:t>
+                                        <w:t>{c.defaultValue}</w:t>
                                     </w:r>
                                 </w:p>
                             </w:tc>
@@ -819,13 +804,14 @@
                                             <w:rFonts w:ascii="宋体" w:hAnsi="宋体" w:cs="宋体" w:hint="eastAsia"/>
                                             <w:szCs w:val="21"/>
                                         </w:rPr>
-                                        <w:t>05</w:t>
+                                        <w:t> </w:t>
                                     </w:r>
                                 </w:p>
                             </w:tc>
                         </w:tr>
+                      </#list>
                     </w:tbl>
-
+                </#list>
                 </w:body>
             </w:document>
         </pkg:xmlData>
