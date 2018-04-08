@@ -13,11 +13,13 @@ import java.util.Map;
 
 public class test {
     public static void main(String[] args) throws Exception{
+
         SimpleDataSource dataSource=new SimpleDataSource(
                 Dialect.ORACLE,"jdbc:oracle:thin:@//115.182.90.203:15217/xe",
                 "eip_study",
                 "eip_study"
         );
+
         String [] types=new String[]{"table"};
         DBMetadataUtils dbMetadataUtils =new DBMetadataUtils(dataSource);
         System.out.println("Catalog:"+dbMetadataUtils.getCatalogs());
