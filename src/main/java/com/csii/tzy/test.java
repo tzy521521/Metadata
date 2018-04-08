@@ -22,14 +22,15 @@ public class test {
         DBMetadataUtils dbMetadataUtils =new DBMetadataUtils(dataSource);
         System.out.println("Catalog:"+dbMetadataUtils.getCatalogs());
         System.out.println("Schema"+dbMetadataUtils.getSchemas());
+        System.out.println("Type"+dbMetadataUtils.getTableTypes());
         DatabaseConfig config = new DatabaseConfig(
                 "xe",
-                "BO_DEV",
+                "SYSTEM",
                 "%",
                 types
         );
         List<IntrospectedTable> list = dbMetadataUtils.introspectTables(config);
-        System.out.println("BO_DEV中数据库表个数："+list.size());
+        System.out.println("XDB中数据库表个数："+list.size());
 
 
         //表集合
@@ -48,7 +49,7 @@ public class test {
             tb.put("name", table.getName());
             //表备注
             if (table.getRemarks()!=null){
-                tb.put("remarks",table.getRemarks());
+                tb.put("remarks",table.getRemarks()+"。");
             }else
                 tb.put("remarks"," ");
             //表主键
@@ -118,7 +119,7 @@ public class test {
             // step4 加载模版文件
             Template template = configuration.getTemplate("demo.xml");
             // step5 生成数据
-            File docFile = new File("D:\\BO_DEV.doc");
+            File docFile = new File("D:\\SYSTEM.doc");
             out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(docFile)));
             // step6 输出文件
             template.process(map, out);
