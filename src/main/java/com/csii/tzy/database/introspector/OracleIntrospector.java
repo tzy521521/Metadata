@@ -60,7 +60,7 @@ public class OracleIntrospector extends DatabaseIntrospector {
      */
     @Override
     protected Map<String, Map<String, String>> getColumnComments(DatabaseConfig config) throws SQLException {
-        Map<String, Map<String, String>> answer = new HashMap<String, Map<String, String>>();
+        Map<String, Map<String, String>> answer = new HashMap<>();
         try {
             StringBuilder sqlBuilder = new StringBuilder("select table_name tname,column_name cname,comments from all_col_comments ");
             sqlBuilder.append("where comments is not null ");

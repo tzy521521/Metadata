@@ -146,7 +146,7 @@ public class DatabaseIntrospector {
      */
     public List<String> getTableTypes() throws SQLException {
         ResultSet rs = dbMetadataUtils.getDatabaseMetaData().getTableTypes();
-        List<String> tableType = new ArrayList<String>();
+        List<String> tableType = new ArrayList<>();
         while (rs.next()) {
             tableType.add(rs.getString("TABLE_TYPE"));
         }
@@ -202,6 +202,8 @@ public class DatabaseIntrospector {
         String localCatalog;
         String localSchema;
         String localTableName;
+        //加入类型
+        String[] types;
         //在这里，dbMetadataUtils.getLetterCase()就可以确定大小写的形式，这里的代码有问题，还要再重新链接数据库。
         if (dbMetadataUtils.getDatabaseMetaData().storesLowerCaseIdentifiers()) {
             localCatalog = config.getCatalog() == null ? null : config.getCatalog().toLowerCase();
@@ -216,7 +218,9 @@ public class DatabaseIntrospector {
             localSchema = config.getSchemaPattern();
             localTableName = config.getTableNamePattern();
         }
-        DatabaseConfig newConfig = new DatabaseConfig(localCatalog, localSchema, localTableName);
+
+        types=config.getTypes();
+        DatabaseConfig newConfig = new DatabaseConfig(localCatalog, localSchema, localTableName,types);
         //DatabaseProcess仍旧为空。----以后扩展？？
         newConfig.setDatabaseProcess(config.getDatabaseProcess());
         return newConfig;
@@ -259,7 +263,6 @@ public class DatabaseIntrospector {
                     rs.getString("TABLE_SCHEM"),
                     rs.getString("TABLE_NAME")
             );
-
             List<IntrospectedColumn> columns = answer.get(table);
             if (columns == null) {
                 columns = new ArrayList<>();
@@ -319,7 +322,6 @@ public class DatabaseIntrospector {
                 }
                 table.addColumn(introspectedColumn);
             }
-
             //添加表的类型信息。
             calculateTableTypes(config,table);
             //表的主键
@@ -329,7 +331,14 @@ public class DatabaseIntrospector {
             //表的索引
             calculateInFoColumns(config,table);
             //在这里增加根据表类型获取像相应的表信息？？？
-            answer.add(table);
+            if (config.getTypes()==null){
+                answer.add(table);
+            }else {
+                for (String type:config.getTypes()){
+                    if (table.getType().equals(type.toUpperCase()))
+                        answer.add(table);
+                }
+            }
         }
         return answer;
     }

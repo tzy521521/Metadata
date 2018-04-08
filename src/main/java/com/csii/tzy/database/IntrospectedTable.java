@@ -177,6 +177,7 @@ public class IntrospectedTable extends IntrospectedBase {
         return rc;
     }
 
+
     //增加了表的类型，需不需要修改
     @Override
     public boolean equals(Object o) {
