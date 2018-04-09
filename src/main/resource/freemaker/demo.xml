@@ -131,6 +131,13 @@
                             </w:rPr>
                             <w:t>${t.remarks}</w:t>
                         </w:r>
+                        <w:r w:rsidRPr="002E0D7D">
+                            <w:rPr>
+                                <w:rFonts w:ascii="宋体" w:hAnsi="宋体" w:hint="eastAsia"/>
+                                <w:sz w:val="24"/>
+                            </w:rPr>
+                            <w:t>。</w:t>
+                        </w:r>
                     </w:p>
                     <w:p w14:paraId="502FC822" w14:textId="77777777" w:rsidR="00BE58E2" w:rsidRDefault="00BE58E2"
                          w:rsidP="00BE58E2">

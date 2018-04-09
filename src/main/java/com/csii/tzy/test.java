@@ -27,12 +27,11 @@ public class test {
         System.out.println("Type"+dbMetadataUtils.getTableTypes());
         DatabaseConfig config = new DatabaseConfig(
                 "xe",
-                "SYSTEM",
-                "%",
-                types
+                "BO_STUDY"
         );
         List<IntrospectedTable> list = dbMetadataUtils.introspectTables(config);
-        System.out.println("XDB中数据库表个数："+list.size());
+        System.out.println(dbMetadataUtils.getDatabaseMetaData().getDatabaseProductVersion());
+        System.out.println("XDB中表个数："+list.size());
 
 
         //表集合
@@ -121,7 +120,7 @@ public class test {
             // step4 加载模版文件
             Template template = configuration.getTemplate("demo.xml");
             // step5 生成数据
-            File docFile = new File("D:\\SYSTEM.doc");
+            File docFile = new File("D:\\BO_STUDY.doc");
             out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(docFile)));
             // step6 输出文件
             template.process(map, out);

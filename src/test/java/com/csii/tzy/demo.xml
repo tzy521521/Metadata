@@ -89,10 +89,10 @@
                             <w:rPr>
                                 <w:rFonts w:hint="eastAsia"/>
                             </w:rPr>
-                            <w:t>${t.remarks}(${t.name})</w:t>
+                            <w:t>${t.remarks}</w:t>
                         </w:r>
                         <w:r w:rsidRPr="00F10EC4">
-                            <w:t>(S{t.name})</w:t>
+                            <w:t>(${t.name})------${t.type}</w:t>
                         </w:r>
                     </w:p>
                     <w:p w14:paraId="38EA86A4" w14:textId="77C61AED" w:rsidR="00BE58E2" w:rsidRDefault="00BE58E2">
@@ -261,7 +261,7 @@
                                 <w:rFonts w:ascii="宋体" w:hAnsi="宋体"/>
                                 <w:sz w:val="24"/>
                             </w:rPr>
-                            <w:t>{t.inFo}</w:t>
+                            <w:t>${t.inFo}</w:t>
                         </w:r>
                         <w:r w:rsidRPr="0047357B">
                             <w:rPr>
@@ -769,7 +769,7 @@
                                             <w:rFonts w:ascii="宋体" w:hAnsi="宋体" w:cs="宋体" w:hint="eastAsia"/>
                                             <w:szCs w:val="21"/>
                                         </w:rPr>
-                                        <w:t>{c.defaultValue}</w:t>
+                                        <w:t>${c.default}</w:t>
                                     </w:r>
                                 </w:p>
                             </w:tc>
