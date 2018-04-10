@@ -30,6 +30,6 @@ public class Main {
         List<IntrospectedTable> list = dbMetadataUtils.introspectTables(config);
 
         FtUtil ftUtil = new FtUtil();
-        ftUtil.generateFile("/", "demo.xml", list, "D:/", "00.doc");
+        ftUtil.generateFile("/", "demo.xml", list, "D:/", "0011.doc");
     }
 }
