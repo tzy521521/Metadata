@@ -516,7 +516,7 @@ public class DatabaseIntrospector {
         }
 
         try {
-            Map<Short, String> keyColumns = new TreeMap<Short, String>();
+            Map<Short, String> keyColumns = new TreeMap<>();
             while (rs.next()) {
                 //外键列名
                 String columnName = rs.getString("FKCOLUMN_NAME");
@@ -555,12 +555,12 @@ public class DatabaseIntrospector {
         }
 
         try {
+            //Oracle中会有一些问题。。。表中如果没有索引，总会有一个结果。
             while (rs.next()) {
                 IndexInFo indexInFo=new IndexInFo();
                 //外键的一些信息
-                indexInFo.setName(rs.getString("INDEX_NAME"));
-                indexInFo.setType(rs.getString("TYPE"));
                 indexInFo.setColumnName(rs.getString("COLUMN_NAME"));
+                indexInFo.setName(rs.getString("INDEX_NAME"));
 
                 introspectedTable.addInFoKeyColumn(indexInFo);
             }

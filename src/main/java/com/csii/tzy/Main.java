@@ -9,6 +9,8 @@ import java.util.List;
 public class Main {
     public static void main(String[] args) throws Exception{
 
+        //jdbc:oracle:thin:@//115.182.90.203:15217/xe
+        //user:eip_study   pwd:eip_study
          SimpleDataSource dataSource=new SimpleDataSource(
                 Dialect.ORACLE,
                 "jdbc:oracle:thin:@//localhost:1521/orcl",
@@ -28,7 +30,6 @@ public class Main {
         List<IntrospectedTable> list = dbMetadataUtils.introspectTables(config);
 
         FtUtil ftUtil = new FtUtil();
-        ftUtil.generateFile("/", "demo.xml", list, "D:/", "scott.doc");
-
+        ftUtil.generateFile("/", "demo.xml", list, "D:/", "00.doc");
     }
 }

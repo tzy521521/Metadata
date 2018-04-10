@@ -148,6 +148,7 @@ public class FtUtil {
         }
         Map<String,Object> map =new HashMap<>();
         map.put("table", tableList);
+        map.put("user","scott");
         return map;
     }
 }

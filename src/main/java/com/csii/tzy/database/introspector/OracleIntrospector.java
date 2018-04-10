@@ -1,6 +1,8 @@
 package com.csii.tzy.database.introspector;
 
 import com.csii.tzy.database.DatabaseConfig;
+import com.csii.tzy.database.IndexInFo;
+import com.csii.tzy.database.IntrospectedTable;
 import com.csii.tzy.utils.DBMetadataUtils;
 import com.csii.tzy.utils.StringUtils;
 
@@ -18,6 +20,40 @@ public class OracleIntrospector extends DatabaseIntrospector {
 
     public OracleIntrospector(DBMetadataUtils dbMetadataUtils, boolean forceBigDecimals, boolean useCamelCase) {
         super(dbMetadataUtils, forceBigDecimals, useCamelCase);
+    }
+
+    @Override
+    protected void calculateInFoColumns(DatabaseConfig config, IntrospectedTable introspectedTable) {
+        ResultSet rs = null;
+        try {
+            rs = dbMetadataUtils.getDatabaseMetaData().getIndexInfo(
+                    config.getCatalog(),
+                    config.getSchemaPattern(),
+                    introspectedTable.getName(),
+                    false,
+                    false
+            );
+        } catch (SQLException e) {
+            closeResultSet(rs);
+            return;
+        }
+
+        try {
+            //Oracle中会有一些问题。。。表中如果没有索引，总会有一个结果。
+            while (rs.next()) {
+                IndexInFo indexInFo=new IndexInFo();
+                if (rs.getString("COLUMN_NAME")==null)
+                    continue;
+                //外键的一些信息
+                indexInFo.setColumnName(rs.getString("COLUMN_NAME"));
+                indexInFo.setName(rs.getString("INDEX_NAME"));
+
+                introspectedTable.addInFoKeyColumn(indexInFo);
+            }
+        } catch (SQLException e) {
+        } finally {
+            closeResultSet(rs);
+        }
     }
 
     /**
