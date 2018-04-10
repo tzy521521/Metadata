@@ -1,7 +1,6 @@
 package com.csii.tzy;
 import com.csii.tzy.database.*;
 import com.csii.tzy.utils.DBMetadataUtils;
-import com.csii.tzy.utils.FtUtil;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 
@@ -14,10 +13,11 @@ import java.util.Map;
 public class test {
     public static void main(String[] args) throws Exception{
 
+        //jdbc:oracle:thin:@//115.182.90.203:15217/xe
         SimpleDataSource dataSource=new SimpleDataSource(
-                Dialect.ORACLE,"jdbc:oracle:thin:@//115.182.90.203:15217/xe",
-                "eip_study",
-                "eip_study"
+                Dialect.ORACLE,"jdbc:oracle:thin:@//localhost:1521/orcl",
+                "scott",
+                "scott"
         );
 
         String [] types=new String[]{"table"};
@@ -25,13 +25,15 @@ public class test {
         System.out.println("Catalog:"+dbMetadataUtils.getCatalogs());
         System.out.println("Schema"+dbMetadataUtils.getSchemas());
         System.out.println("Type"+dbMetadataUtils.getTableTypes());
+
+
         DatabaseConfig config = new DatabaseConfig(
-                "xe",
-                "BO_STUDY"
+                "orcl",
+                "scott"
         );
         List<IntrospectedTable> list = dbMetadataUtils.introspectTables(config);
         System.out.println(dbMetadataUtils.getDatabaseMetaData().getDatabaseProductVersion());
-        System.out.println("XDB中表个数："+list.size());
+        System.out.println("scott中表个数："+list.size());
 
 
         //表集合
@@ -105,22 +107,16 @@ public class test {
         }
         Map<String,Object> map =new HashMap<>();
         map.put("table", tableList);
-
-        /**
-         * FtUtil ftUtil = new FtUtil();
-         ftUtil.generateFile("/", "demo.xml", map, "D:/", "demo.doc");
-         */
-
         // step1 创建freeMarker配置实例
         Configuration configuration = new Configuration();
         Writer out = null;
         try {
             // step2 获取模版路径
-            configuration.setDirectoryForTemplateLoading(new File("E:\\IdeaProjects\\Metadata\\src\\main\\resource\\freemaker"));
+            configuration.setDirectoryForTemplateLoading(new File("E:\\IdeaProjects\\Metadata\\src\\main\\resource"));
             // step4 加载模版文件
             Template template = configuration.getTemplate("demo.xml");
             // step5 生成数据
-            File docFile = new File("D:\\BO_STUDY.doc");
+            File docFile = new File("D:\\scott.doc");
             out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(docFile)));
             // step6 输出文件
             template.process(map, out);
