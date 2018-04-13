@@ -11,9 +11,6 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.*;
 
-/**
- * 不同的数据库不同的处理过程？反射机制？
- */
 public class DatabaseIntrospector {
 
     protected static final Map<Integer, JdbcTypeInformation> typeMap = new HashMap<>();
