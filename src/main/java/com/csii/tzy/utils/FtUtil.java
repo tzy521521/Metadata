@@ -17,7 +17,6 @@ import java.util.Map;
 
 public class FtUtil {
 
-    /*
     public void generateFile(String templatesDir, String templateName, Map root, String outDir, String outFileName) {
         FileWriter out = null;
         try {
@@ -38,7 +37,6 @@ public class FtUtil {
             }
         }
     }
-     */
 
     /**
      * Description: 根据模版生成文件 <br/>
