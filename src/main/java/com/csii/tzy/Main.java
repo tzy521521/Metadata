@@ -20,13 +20,13 @@ public class Main {
          * jdbc:mysql://115.182.90.203:33067/eip_autotest eibs eibs
          */
         SimpleDataSource dataSource=new SimpleDataSource(
-                Dialect.MYSQL,
-                "jdbc:mysql://115.182.90.203:33067/eip_autotest",
-                "eibs",
-                "eibs"
+                Dialect.ORACLE,
+                "jdbc:oracle:thin:@//localhost:1521/orcl",
+                "scott",
+                "scott"
         );
         DBMetadataUtils dbMetadataUtils =new DBMetadataUtils(dataSource);
-        DatabaseConfig config = new DatabaseConfig("eip_autotest","");
+        DatabaseConfig config = new DatabaseConfig("","scott");
         long startTime = System.currentTimeMillis();
         List<IntrospectedTable> list = dbMetadataUtils.introspectTables(config);
         long endTime = System.currentTimeMillis();
