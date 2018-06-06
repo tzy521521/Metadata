@@ -11,14 +11,6 @@ import java.util.Map;
 
 public class Main {
     public static void main(String[] args) throws Exception{
-        /**
-         * jdbc:oracle:thin:@//115.182.90.203:15217/xe eip_study eip_study
-         * jdbc:oracle:thin:@//115.182.90.203:15217/xe zhou zhou
-         * jdbc:oracle:thin:@//115.182.90.203:15217/xe  eip_zhou eip_zhou
-         * jdbc:oracle:thin:@//115.182.90.203:15217/xe  eip_zhengli eip_zhengli
-         * jdbc:db2://115.182.90.203:50007/EIP_DEV db2inst1 db2inst1
-         * jdbc:mysql://115.182.90.203:33067/eip_autotest eibs eibs
-         */
         SimpleDataSource dataSource=new SimpleDataSource(
                 Dialect.ORACLE,
                 "jdbc:oracle:thin:@//localhost:1521/orcl",
