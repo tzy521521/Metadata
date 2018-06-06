@@ -2,15 +2,17 @@ package com.csii.tzy.database.introspector;
 
 import com.csii.tzy.database.DatabaseConfig;
 import com.csii.tzy.database.IndexInFo;
+import com.csii.tzy.database.IntrospectedColumn;
 import com.csii.tzy.database.IntrospectedTable;
 import com.csii.tzy.utils.DBMetadataUtils;
 import com.csii.tzy.utils.StringUtils;
+import com.ibm.db2.jcc.am.SqlException;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
+import java.sql.Types;
+import java.util.*;
 
 public class OracleIntrospector extends DatabaseIntrospector {
 
@@ -22,47 +24,6 @@ public class OracleIntrospector extends DatabaseIntrospector {
         super(dbMetadataUtils, forceBigDecimals, useCamelCase);
     }
 
-    @Override
-    protected void calculateInFoColumns(DatabaseConfig config, IntrospectedTable introspectedTable) {
-        ResultSet rs = null;
-        try {
-            rs = dbMetadataUtils.getDatabaseMetaData().getIndexInfo(
-                    config.getCatalog(),
-                    config.getSchemaPattern(),
-                    introspectedTable.getName(),
-                    false,
-                    false
-            );
-        } catch (SQLException e) {
-            closeResultSet(rs);
-            return;
-        }
-
-        try {
-            //Oracle中会有一些问题。。。表中如果没有索引，总会有一个结果。
-            while (rs.next()) {
-                IndexInFo indexInFo=new IndexInFo();
-                if (rs.getString("COLUMN_NAME")==null)
-                    continue;
-                //外键的一些信息
-                indexInFo.setColumnName(rs.getString("COLUMN_NAME"));
-                indexInFo.setName(rs.getString("INDEX_NAME"));
-
-                introspectedTable.addInFoKeyColumn(indexInFo);
-            }
-        } catch (SQLException e) {
-        } finally {
-            closeResultSet(rs);
-        }
-    }
-
-    /**
-     * 获取表名和注释映射
-     *
-     * @param config
-     * @return
-     * @throws SQLException
-     */
     @Override
     public Map<String, String> getTableComments(DatabaseConfig config) throws SQLException {
         Map<String, String> answer = new HashMap<>();
@@ -86,14 +47,6 @@ public class OracleIntrospector extends DatabaseIntrospector {
         }
         return answer;
     }
-
-    /**
-     * 获取表字段注释
-     *
-     * @param config
-     * @return
-     * @throws SQLException
-     */
     @Override
     protected Map<String, Map<String, String>> getColumnComments(DatabaseConfig config) throws SQLException {
         Map<String, Map<String, String>> answer = new HashMap<>();
@@ -116,6 +69,34 @@ public class OracleIntrospector extends DatabaseIntrospector {
                     answer.put(tname, new HashMap<>());
                 }
                 answer.get(tname).put(rs.getString(dbMetadataUtils.convertLetterByCase("CNAME")), rs.getString(dbMetadataUtils.convertLetterByCase("COMMENTS")));
+            }
+            closeResultSet(rs);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return answer;
+    }
+    @Override
+    protected Map<String, String> getColumnTypes(DatabaseConfig config) throws SQLException {
+        Map<String, String> answer = new HashMap<>();
+        try {
+            StringBuilder sqlBuilder = new StringBuilder("select column_name,data_type type from all_tab_columns ");
+            if (StringUtils.isNotEmpty(config.getSchemaPattern())) {
+                sqlBuilder.append(" where owner like :1 ");
+            }
+            sqlBuilder.append("order by column_name,data_type ");
+
+            PreparedStatement preparedStatement = dbMetadataUtils.getConnection().prepareStatement(sqlBuilder.toString());
+            if (StringUtils.isNotEmpty(config.getSchemaPattern())) {
+                preparedStatement.setString(1, config.getSchemaPattern());
+            }
+            ResultSet rs = preparedStatement.executeQuery();
+            while (rs.next()) {
+                //String tname = rs.getString(dbMetadataUtils.convertLetterByCase("TNAME"));
+                String tname = rs.getString(1);
+                if (!answer.containsKey(tname)) {
+                    answer.put(tname, rs.getString(2));
+                }
             }
             closeResultSet(rs);
         } catch (Exception e) {

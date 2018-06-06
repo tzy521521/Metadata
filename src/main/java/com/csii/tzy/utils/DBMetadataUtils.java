@@ -1,10 +1,7 @@
 package com.csii.tzy.utils;
 
 import com.csii.tzy.database.*;
-import com.csii.tzy.database.introspector.DatabaseIntrospector;
-import com.csii.tzy.database.introspector.OracleIntrospector;
-import com.csii.tzy.database.introspector.PGIntrospector;
-import com.csii.tzy.database.introspector.SqlServerIntrospector;
+import com.csii.tzy.database.introspector.*;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -20,23 +17,21 @@ import java.util.List;
 public class DBMetadataUtils {
     //数据源
     private SimpleDataSource dataSource;
-    //数据库连接
-    private Connection connection;
-    //获取数据库--将未用双引号引起来的大小写混合的 SQL 标识符存储的形式---mysql中用小写
-    private LetterCase letterCase;
     //数据库驱动
     private Dialect dialect;
-    //Java内省机制IntroSpector,????mybatis
+    //数据库处理
     private DatabaseIntrospector introspector;
+    //数据库连接
+    private Connection connection;
     //数据库元数据
     private DatabaseMetaData databaseMetaData;
+    //获取此数据库大小写混写的不带引号的 SQL 标识符存储的形式---mysql中用小写，
+    private LetterCase letterCase;
     //数据库列表
     private List<String> catalogs;
-    //获取此数据库用作类别和表名之间的分隔符的 String----新增....
-    private String catalogSeparator;
     //schema列表
     private List<String> schemas;
-    //数据库中所用的表类型----新增....
+    //数据库中所用的表类型
     private List<String> tableTypes;
 
     public DBMetadataUtils(SimpleDataSource dataSource) {
@@ -50,86 +45,24 @@ public class DBMetadataUtils {
         this.dataSource = dataSource;
         this.dialect = dataSource.getDialect();
         try {
-            initLetterCase();
             this.introspector = getDatabaseIntrospector(forceBigDecimals, useCamelCase);
+            this.letterCase = introspector.getLetterCase();
             this.catalogs = introspector.getCatalogs();
             this.schemas = introspector.getSchemas();
-            this.tableTypes= introspector.getTableTypes();
-            this.catalogSeparator=introspector.getCatalogSeparator();
-            //断开链接。。。。。。
+            this.tableTypes = introspector.getTableTypes();
+            //断开链接
             closeConnection();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    /**
-     * 私有--在创建完DBMetadataUtils之后关闭链接数据库链接
-     * 将connection和databaseMetaData设置为空,有什么用处。
-     */
-    private void closeConnection() {
-        if (this.connection != null) {
-            try {
-                this.connection.close();
-                this.connection = null;
-                this.databaseMetaData = null;
-            } catch (SQLException e) {
-            }
-        }
-    }
-
-    public boolean testConnection() {
-        try {
-            if (!getConnection().isClosed()) {
-                return true;
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        } finally {
-            closeConnection();
-        }
-        return false;
     }
 
     public Connection getConnection() throws SQLException {
         if (connection != null && !connection.isClosed()) {
             return connection;
         }
-        try {
-            this.connection = dataSource.getConnection();
-            return connection;
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public LetterCase getLetterCase() {
-        return letterCase;
-    }
-
-    public Dialect getDialect() {
-        return dialect;
-    }
-
-    public DatabaseIntrospector getIntrospector() {
-        return introspector;
-    }
-
-    private DatabaseIntrospector getDatabaseIntrospector(boolean forceBigDecimals, boolean useCamelCase) {
-        switch (dataSource.getDialect()) {
-            case ORACLE:
-                return new OracleIntrospector(this, forceBigDecimals, useCamelCase);
-            case POSTGRESQL:
-                return new PGIntrospector(this, forceBigDecimals, useCamelCase);
-            case SQLSERVER:
-                return new SqlServerIntrospector(this, forceBigDecimals, useCamelCase);
-            case DB2:
-            case HSQLDB:
-            case MARIADB:
-            case MYSQL:
-            default:
-                return new DatabaseIntrospector(this, forceBigDecimals, useCamelCase);
-        }
+        this.connection = dataSource.getConnection();
+        return connection;
     }
 
     public DatabaseMetaData getDatabaseMetaData() throws SQLException {
@@ -146,23 +79,23 @@ public class DBMetadataUtils {
         }
     }
 
-    public List<String> getCatalogs() throws SQLException {
+    public LetterCase getLetterCase() {
+        return letterCase;
+    }
+
+    public List<String> getCatalogs()  {
         return catalogs;
     }
 
-    public String getCatalogSeparator() {
-        return catalogSeparator;
-    }
-
-    public List<String> getSchemas() throws SQLException {
+    public List<String> getSchemas() {
         return schemas;
     }
 
-    public List<String> getTableTypes() throws SQLException{
+    public List<String> getTableTypes() {
         return tableTypes;
     }
 
-    public DatabaseConfig getDefaultConfig() throws SQLException {
+    public DatabaseConfig getDefaultConfig() {
         DatabaseConfig config = null;
         if (catalogs.size() == 1) {
             if (schemas.size() == 1) {
@@ -178,7 +111,6 @@ public class DBMetadataUtils {
             }
         }
         if (config == null) {
-            //switch (getDialect()) {
             switch (this.dialect){
                 case DB2:
                 case ORACLE:
@@ -248,61 +180,18 @@ public class DBMetadataUtils {
         }
         return config;
     }
-
     /**
-     * 根据数据库查询配置，获得数据库中表的和表中字段的信息。
+     * 根据数据库查询配置，获得数据库中表的信息。
      * @param config
      * @return
      * @throws SQLException
      */
-    public List<IntrospectedTable> introspectTables(DatabaseConfig config) throws SQLException {
+    public List<IntrospectedTable> introspectTables(DatabaseConfig config) throws SQLException{
         try {
             return introspector.introspectTables(config);
-        } finally {
+        }
+        finally {
             closeConnection();
-        }
-    }
-
-    public static void sortTables(List<IntrospectedTable> tables) {
-        if (StringUtils.isNotEmpty(tables)) {
-            Collections.sort(tables, new Comparator<IntrospectedTable>() {
-                public int compare(IntrospectedTable o1, IntrospectedTable o2) {
-                    return o1.getName().compareTo(o2.getName());
-                }
-            });
-        }
-    }
-
-    public static void sortColumns(List<IntrospectedColumn> columns) {
-        if (StringUtils.isNotEmpty(columns)) {
-            Collections.sort(columns, new Comparator<IntrospectedColumn>() {
-                public int compare(IntrospectedColumn o1, IntrospectedColumn o2) {
-                    int result = o1.getTableName().compareTo(o2.getTableName());
-                    if (result == 0) {
-                        result = o1.getName().compareTo(o2.getName());
-                    }
-                    return result;
-                }
-            });
-        }
-    }
-
-    private enum LetterCase {
-        UPPER, LOWER, NORMAL
-    }
-
-    private void initLetterCase() {
-        try {
-            DatabaseMetaData databaseMetaData = getConnection().getMetaData();
-            if (databaseMetaData.storesLowerCaseIdentifiers()) {
-                this.letterCase = LetterCase.LOWER;
-            } else if (databaseMetaData.storesUpperCaseIdentifiers()) {
-                this.letterCase = LetterCase.UPPER;
-            } else {
-                this.letterCase = LetterCase.NORMAL;
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
         }
     }
 
@@ -320,19 +209,71 @@ public class DBMetadataUtils {
         }
     }
 
+    public void sortTables(List<IntrospectedTable> tables) {
+        if (StringUtils.isNotEmpty(tables)) {
+            Collections.sort(tables, new Comparator<IntrospectedTable>() {
+                public int compare(IntrospectedTable o1, IntrospectedTable o2) {
+                    return o1.getName().compareTo(o2.getName());
+                }
+            });
+        }
+    }
+
+    public void sortColumns(List<IntrospectedColumn> columns) {
+        if (StringUtils.isNotEmpty(columns)) {
+            Collections.sort(columns, new Comparator<IntrospectedColumn>() {
+                public int compare(IntrospectedColumn o1, IntrospectedColumn o2) {
+                    int result = o1.getTableName().compareTo(o2.getTableName());
+                    if (result == 0) {
+                        result = o1.getName().compareTo(o2.getName());
+                    }
+                    return result;
+                }
+            });
+        }
+    }
+
+    private DatabaseIntrospector getDatabaseIntrospector(boolean forceBigDecimals, boolean useCamelCase) {
+        switch (dataSource.getDialect()) {
+            case ORACLE:
+                return new OracleIntrospector(this, forceBigDecimals, useCamelCase);
+            case POSTGRESQL:
+                return new PGIntrospector(this, forceBigDecimals, useCamelCase);
+            case SQLSERVER:
+                return new SqlServerIntrospector(this, forceBigDecimals, useCamelCase);
+            case MYSQL:
+                return new MySQLIntrospector(this, forceBigDecimals, useCamelCase);
+            case DB2:
+            case HSQLDB:
+            case MARIADB:
+            default:
+                return new DatabaseIntrospector(this, forceBigDecimals, useCamelCase);
+        }
+    }
+
+    public void closeConnection() {
+        if (this.connection != null) {
+            try {
+                this.connection.close();
+                this.connection = null;
+                this.databaseMetaData = null;
+            } catch (SQLException e) {
+            }
+        }
+    }
+
     @Override
     public String toString() {
         return "DBMetadataUtils{" +
                 "dataSource=" + dataSource +
-                ", connection=" + connection +
-                ", letterCase=" + letterCase +
                 ", dialect=" + dialect +
                 ", introspector=" + introspector +
+                ", connection=" + connection +
                 ", databaseMetaData=" + databaseMetaData +
+                ", letterCase=" + letterCase +
                 ", catalogs=" + catalogs +
                 ", schemas=" + schemas +
                 ", tableTypes=" + tableTypes +
-                ", catalogSeparator='" + catalogSeparator + '\'' +
                 '}';
     }
 }

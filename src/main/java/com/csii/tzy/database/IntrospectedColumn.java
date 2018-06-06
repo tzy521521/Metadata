@@ -3,33 +3,48 @@ package com.csii.tzy.database;
 import java.sql.Types;
 
 public class IntrospectedColumn extends IntrospectedBase {
-    //字段
+
+    //字段所在的表的名称
+    protected String tableName;
+    //是否为主键
+    protected boolean pk;
+    //java.sql.Types 的 SQL 类型编号
     protected int jdbcType;
-    //字段类型名（数据库中的类型）
+    //java.sql.Types 的 SQL 类型
+    protected String sqlTypes ;
+    //
     protected String jdbcTypeName;
     //字段是否为空
     protected boolean nullable;
-    //是否为主键
-    protected boolean pk;
     //字段长度
     protected int length;
     //字段小数部分位数
     protected int scale;
+    //字段默认值
+    protected String defaultValue;
     //
     protected String javaProperty;
     //
     protected FullyQualifiedJavaType fullyQualifiedJavaType;
-    //是否是表中的特定？？字段。
-    protected boolean isColumnNameDelimited;
-    //字段所在的表
-    protected IntrospectedTable introspectedTable;
     //
-    private String type;
-    //字段默认值
-    protected String defaultValue;
+    protected boolean isColumnNameDelimited;
+//    //
+//    protected IntrospectedTable introspectedTable;
 
-    public IntrospectedColumn() {
-        super();
+    public String getTableName() {
+        return tableName;
+    }
+
+    public void setTableName(String tableName) {
+        this.tableName = tableName;
+    }
+
+    public boolean isPk() {
+        return pk;
+    }
+
+    public void setPk(boolean pk) {
+        this.pk = pk;
     }
 
     public int getJdbcType() {
@@ -40,20 +55,23 @@ public class IntrospectedColumn extends IntrospectedBase {
         this.jdbcType = jdbcType;
     }
 
+    public String getSqlTypes() {
+        return sqlTypes;
+    }
+
+    public void setSqlTypes(String sqlTypes) {
+        this.sqlTypes = sqlTypes;
+    }
+
     public String getJdbcTypeName() {
         if (jdbcTypeName == null) {
             return "OTHER";
         }
-
         return jdbcTypeName;
     }
 
     public void setJdbcTypeName(String jdbcTypeName) {
         this.jdbcTypeName = jdbcTypeName;
-    }
-
-    public boolean isPk() {
-        return pk;
     }
 
     public boolean isNullable() {
@@ -62,10 +80,6 @@ public class IntrospectedColumn extends IntrospectedBase {
 
     public void setNullable(boolean nullable) {
         this.nullable = nullable;
-    }
-
-    public void setPk(boolean pk) {
-        this.pk = pk;
     }
 
     public int getLength() {
@@ -82,6 +96,14 @@ public class IntrospectedColumn extends IntrospectedBase {
 
     public void setScale(int scale) {
         this.scale = scale;
+    }
+
+    public String getDefaultValue() {
+        return defaultValue;
+    }
+
+    public void setDefaultValue(String defaultValue) {
+        this.defaultValue = defaultValue;
     }
 
     public String getJavaProperty() {
@@ -104,35 +126,19 @@ public class IntrospectedColumn extends IntrospectedBase {
         return isColumnNameDelimited;
     }
 
-    public void setColumnNameDelimited(boolean isColumnNameDelimited) {
-        this.isColumnNameDelimited = isColumnNameDelimited;
+    public void setColumnNameDelimited(boolean columnNameDelimited) {
+        isColumnNameDelimited = columnNameDelimited;
     }
 
-    public IntrospectedTable getIntrospectedTable() {
-        return introspectedTable;
-    }
+//    public IntrospectedTable getIntrospectedTable() {
+//        return introspectedTable;
+//    }
+//
+//    public void setIntrospectedTable(IntrospectedTable introspectedTable) {
+//        this.introspectedTable = introspectedTable;
+//    }
 
-    public void setIntrospectedTable(IntrospectedTable introspectedTable) {
-        this.introspectedTable = introspectedTable;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public String getDefaultValue() {
-        return defaultValue;
-    }
-
-    public void setDefaultValue(String defaultValue) {
-        this.defaultValue = defaultValue;
-    }
-
-    //
+    //~~~~~
     public boolean isBLOBColumn() {
         String typeName = getJdbcTypeName();
 
@@ -141,13 +147,11 @@ public class IntrospectedColumn extends IntrospectedBase {
                 || "LONGVARBINARY".equals(typeName) || "LONGVARCHAR".equals(typeName)  //$NON-NLS-2$
                 || "NCLOB".equals(typeName) || "VARBINARY".equals(typeName);  //$NON-NLS-2$
     }
-
     //
     public boolean isStringColumn() {
         return fullyQualifiedJavaType.equals(FullyQualifiedJavaType
                 .getStringInstance());
     }
-
     //
     public boolean isJdbcCharacterColumn() {
         return jdbcType == Types.CHAR || jdbcType == Types.CLOB
@@ -155,14 +159,12 @@ public class IntrospectedColumn extends IntrospectedBase {
                 || jdbcType == Types.LONGNVARCHAR || jdbcType == Types.NCHAR
                 || jdbcType == Types.NCLOB || jdbcType == Types.NVARCHAR;
     }
-
     //
     public boolean isJDBCDateColumn() {
         return fullyQualifiedJavaType.equals(FullyQualifiedJavaType
                 .getDateInstance())
                 && "DATE".equalsIgnoreCase(jdbcTypeName);
     }
-
     //
     public boolean isJDBCTimeColumn() {
         return fullyQualifiedJavaType.equals(FullyQualifiedJavaType
@@ -170,26 +172,23 @@ public class IntrospectedColumn extends IntrospectedBase {
                 && "TIME".equalsIgnoreCase(jdbcTypeName);
     }
 
-    public String getTableName() {
-        return getIntrospectedTable().getName();
-    }
-
     @Override
     public String toString() {
         return "IntrospectedColumn{" +
-                "name='" + name + '\'' +
+                "tableName='" + tableName + '\'' +
+                ", name='" + name + '\'' +
+                ", remarks='" + remarks + '\'' +
+                ", pk=" + pk +
                 ", jdbcType=" + jdbcType +
                 ", jdbcTypeName='" + jdbcTypeName + '\'' +
+                ", type='" + sqlTypes + '\'' +
                 ", nullable=" + nullable +
                 ", length=" + length +
+                ", defaultValue='" + defaultValue + '\'' +
                 ", scale=" + scale +
                 ", javaProperty='" + javaProperty + '\'' +
                 ", fullyQualifiedJavaType=" + fullyQualifiedJavaType +
                 ", isColumnNameDelimited=" + isColumnNameDelimited +
-                ", introspectedTable=" + introspectedTable +
-                ", remarks='" + remarks + '\'' +
-                ", type='" + type + '\'' +
-                ", defaultValue='" + defaultValue + '\'' +
                 '}';
     }
 }

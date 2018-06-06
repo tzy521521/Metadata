@@ -2,6 +2,7 @@ package com.csii.tzy.database;
 
 /**
  * 数据库 - 驱动和连接示例
+ * @author lipu@csii.com.cn
  */
 public enum Dialect {
     ORACLE("oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@//localhost:1521/orcl"),
@@ -30,7 +31,6 @@ public enum Dialect {
 
     /**
      * 驱动是否存在
-     *
      * @return
      */
     public boolean exists() {

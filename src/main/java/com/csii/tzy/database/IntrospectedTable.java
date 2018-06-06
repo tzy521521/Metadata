@@ -9,7 +9,7 @@ public class IntrospectedTable extends IntrospectedBase {
     private String catalog;
     //表所在的schema
     private String schema;
-    //增加表的类型------------一个有用的功能，待实现。
+    //增加表的类型
     private String type;
     //表的主键信息
     protected List<IntrospectedColumn> primaryKeyColumns;
@@ -102,7 +102,7 @@ public class IntrospectedTable extends IntrospectedBase {
     //添加字段-----
     public void addColumn(IntrospectedColumn introspectedColumn) {
         baseColumns.add(introspectedColumn);
-        introspectedColumn.setIntrospectedTable(this);
+//        introspectedColumn.setIntrospectedTable(this);
     }
 
     //添加主键列表
@@ -193,12 +193,26 @@ public class IntrospectedTable extends IntrospectedBase {
         return true;
     }
 
-    //增加了表的类型，需不需要修改
     @Override
     public int hashCode() {
         int result = name != null ? name.hashCode() : 0;
         result = 31 * result + (schema != null ? schema.hashCode() : 0);
         result = 31 * result + (catalog != null ? catalog.hashCode() : 0);
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return "IntrospectedTable{" +
+                "catalog='" + catalog + '\'' +
+                ", schema='" + schema + '\'' +
+                ", name='" + name + '\'' +
+                ", remarks='" + remarks + '\'' +
+                ", type='" + type + '\'' +
+                ", primaryKeyColumns=" + primaryKeyColumns +
+                ", foreignKeyColumns=" + foreignKeyColumns +
+                ", inFoColumns=" + inFoColumns +
+                ", baseColumns=" + baseColumns +
+                '}';
     }
 }

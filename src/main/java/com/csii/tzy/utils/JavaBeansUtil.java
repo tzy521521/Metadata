@@ -25,8 +25,7 @@ public class JavaBeansUtil {
         super();
     }
 
-    public static String getGetterMethodName(String property,
-                                             FullyQualifiedJavaType fullyQualifiedJavaType) {
+    public static String getGetterMethodName(String property, FullyQualifiedJavaType fullyQualifiedJavaType) {
         StringBuilder sb = new StringBuilder();
 
         sb.append(property);
@@ -36,8 +35,7 @@ public class JavaBeansUtil {
             }
         }
 
-        if (fullyQualifiedJavaType.equals(FullyQualifiedJavaType
-                .getBooleanPrimitiveInstance())) {
+        if (fullyQualifiedJavaType.equals(FullyQualifiedJavaType.getBooleanPrimitiveInstance())) {
             sb.insert(0, "is");
         } else {
             sb.insert(0, "get");
@@ -61,8 +59,7 @@ public class JavaBeansUtil {
         return sb.toString();
     }
 
-    public static String getCamelCaseString(String inputString,
-                                            boolean firstCharacterUppercase) {
+    public static String getCamelCaseString(String inputString, boolean firstCharacterUppercase) {
         StringBuilder sb = new StringBuilder();
 
         boolean nextUpperCase = false;

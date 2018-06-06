@@ -4,19 +4,19 @@ import java.util.Arrays;
 
 /**
  * 数据库查询配置
- * @author tzy
+ * @author lipu@csii.com.cn
  */
 public class DatabaseConfig {
     //要查询的数据库
     private String catalog;
-    //要查询的匹配的shema.
+    //要查询的匹配的schema
     private String schemaPattern;
     //要查询的表名称
     private String tableNamePattern;
-    //增加数据表的的类型功能~~~~~~~~~~~~~~~~~~~~,但是查询字段的时候不是这个参数。
+    //增加查询特定字段名称的功能。
+    private String columnNamePattern;
+    //增加查询数据表的的类型功能
     private String[] types;
-    //暂时没啥用？
-    private DatabaseProcess databaseProcess;
 
     public DatabaseConfig() {
         this(null, null);
@@ -26,16 +26,23 @@ public class DatabaseConfig {
         this(catalog, schemaPattern, "%");
     }
 
-    public DatabaseConfig(String catalog, String schemaPattern, String tableNamePattern) {
-        this.catalog = catalog;
-        this.schemaPattern = schemaPattern;
-        this.tableNamePattern = tableNamePattern;
+    public DatabaseConfig(String catalog, String schemaPattern,String tableNamePattern) {
+        this(catalog, schemaPattern, "%",null);
     }
 
-    public DatabaseConfig(String catalog, String schemaPattern, String tableNamePattern, String[] types) {
+    public DatabaseConfig(String catalog, String schemaPattern,String[] types) {
+        this(catalog, schemaPattern, "%",null,types);
+    }
+
+    public DatabaseConfig(String catalog, String schemaPattern, String tableNamePattern,String columnNamePattern) {
+        this(catalog, schemaPattern, "%",null,null);
+    }
+
+    public DatabaseConfig(String catalog, String schemaPattern, String tableNamePattern, String columnNamePattern,String[] types) {
         this.catalog = catalog;
         this.schemaPattern = schemaPattern;
         this.tableNamePattern = tableNamePattern;
+        this.columnNamePattern = columnNamePattern;
         this.types = types;
     }
 
@@ -63,6 +70,14 @@ public class DatabaseConfig {
         this.tableNamePattern = tableNamePattern;
     }
 
+    public String getColumnNamePattern() {
+        return columnNamePattern;
+    }
+
+    public void setColumnNamePattern(String columnNamePattern) {
+        this.columnNamePattern = columnNamePattern;
+    }
+
     public String[] getTypes() {
         return types;
     }
@@ -70,31 +85,7 @@ public class DatabaseConfig {
     public void setTypes(String[] types) {
         this.types = types;
     }
-
-    public boolean hasProcess() {
-        return databaseProcess != null;
-    }
-
-    public DatabaseProcess getDatabaseProcess() {
-        return databaseProcess;
-    }
-
-    public void setDatabaseProcess(DatabaseProcess databaseProcess) {
-        this.databaseProcess = databaseProcess;
-    }
-
-    @Override
-    public String toString() {
-        return "DatabaseConfig{" +
-                "catalog='" + catalog + '\'' +
-                ", schemaPattern='" + schemaPattern + '\'' +
-                ", tableNamePattern='" + tableNamePattern + '\'' +
-                ", types=" + Arrays.toString(types) +
-                ", databaseProcess=" + databaseProcess +
-                '}';
-    }
-
-    //加入查询类型是否要修改？
+    //
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -110,13 +101,22 @@ public class DatabaseConfig {
 
         return true;
     }
-
-    //加入查询类型是否要修改？
     @Override
     public int hashCode() {
         int result = catalog != null ? catalog.hashCode() : 0;
         result = 31 * result + (schemaPattern != null ? schemaPattern.hashCode() : 0);
         result = 31 * result + (tableNamePattern != null ? tableNamePattern.hashCode() : 0);
+        result = 31 * result + (columnNamePattern != null ? columnNamePattern.hashCode() : 0);
+        result = 31 * result + (types !=null ? Arrays.hashCode(types) : 0);
         return result;
+    }
+    @Override
+    public String toString() {
+        return "DatabaseConfig{" +
+                "catalog='" + catalog + '\'' +
+                ", schemaPattern='" + schemaPattern + '\'' +
+                ", tableNamePattern='" + tableNamePattern + '\'' +
+                ", types=" + Arrays.toString(types) +
+                '}';
     }
 }

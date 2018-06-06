@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 
 /**
  * 数据源
+ * @author lipu@csii.com.cn
  */
 public final class SimpleDataSource implements DataSource {
     private Dialect dialect;
@@ -57,19 +58,17 @@ public final class SimpleDataSource implements DataSource {
     @Override
     public Connection getConnection() throws SQLException {
         if (delegate instanceof SimpleDataSource) {
-            /**
-             *
-             * //如果是mysql那么需要设置里可以返回mysql的备注信息,应该只是一部分。
-
-             */
-            if (this.dialect.equals(Dialect.MYSQL)){
-                Properties props =new Properties();
-                props.setProperty("user", user);
-                props.setProperty("password", pwd);
-                props.setProperty("remarks", "true"); //设置可以获取remarks信息
-                props.setProperty("useInformationSchema", "true");//设置可以获取tables remarks信息
-                return DriverManager.getConnection(url,props);
-            }
+//            /**
+//             * 如果是mysql那么需要添加额外的设置，才能支持返回数据表的表注释。
+//             */
+//            if (this.dialect.equals(Dialect.MYSQL)){
+//                Properties props =new Properties();
+//                props.setProperty("user", this.user);
+//                props.setProperty("password", this.pwd);
+//                props.setProperty("remarks", "true"); //设置可以获取remarks信息
+//                props.setProperty("useInformationSchema", "true");//设置可以获取tables remarks信息
+//                return DriverManager.getConnection(url,props);
+//            }
             return DriverManager.getConnection(url, user, pwd);
         } else {
             return delegate.getConnection();
@@ -78,6 +77,9 @@ public final class SimpleDataSource implements DataSource {
 
     @Override
     public Connection getConnection(String username, String password) throws SQLException {
+        /**
+         * mysql的话暂时没找到合适的方法可以获取表注释。
+         */
         if (delegate instanceof SimpleDataSource) {
             return DriverManager.getConnection(url, username, password);
         } else {
