@@ -13,7 +13,7 @@ import java.util.Map;
 /**
  * @author lipu@csii.com.cn
  */
-public class MySQLIntrospector extends DatabaseIntrospector{
+public class MySQLIntrospector extends DatabaseIntrospector {
 
     public MySQLIntrospector(DBMetadataUtils dbMetadataUtils) {
         super(dbMetadataUtils);

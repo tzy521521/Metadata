@@ -1,18 +1,14 @@
 package com.csii.tzy.database.introspector;
 
 import com.csii.tzy.database.DatabaseConfig;
-import com.csii.tzy.database.IndexInFo;
-import com.csii.tzy.database.IntrospectedColumn;
-import com.csii.tzy.database.IntrospectedTable;
 import com.csii.tzy.utils.DBMetadataUtils;
 import com.csii.tzy.utils.StringUtils;
-import com.ibm.db2.jcc.am.SqlException;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Types;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public class OracleIntrospector extends DatabaseIntrospector {
 

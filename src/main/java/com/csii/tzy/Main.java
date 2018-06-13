@@ -12,13 +12,13 @@ import java.util.Map;
 public class Main {
     public static void main(String[] args) throws Exception{
         SimpleDataSource dataSource=new SimpleDataSource(
-                Dialect.ORACLE,
-                "jdbc:oracle:thin:@//localhost:1521/orcl",
-                "scott",
-                "scott"
+                Dialect.MYSQL,
+                "jdbc:mysql://115.182.90.203:33067/eip_autotest",
+                "eibs",
+                "eibs"
         );
         DBMetadataUtils dbMetadataUtils =new DBMetadataUtils(dataSource);
-        DatabaseConfig config = new DatabaseConfig("","scott");
+        DatabaseConfig config = new DatabaseConfig("eip_autotest","");
         long startTime = System.currentTimeMillis();
         List<IntrospectedTable> list = dbMetadataUtils.introspectTables(config);
         long endTime = System.currentTimeMillis();
